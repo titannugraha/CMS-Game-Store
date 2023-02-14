@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+
 import Header from "../../components/Header";
 
 import all_products from "../../constants/products";
 import { calculateRange, sliceData } from "../../utils/table-pagination";
+
+import Swal from "sweetalert2";
 
 import "../styles.css";
 
@@ -11,13 +18,44 @@ const Products = () => {
   const [products, setProducts] = useState(all_products);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState([]);
+  const [show, setShow] = useState(false);
+
+  const navigation = useNavigate();
 
   useEffect(() => {
     setPagination(calculateRange(all_products, 5));
     setProducts(sliceData(all_products, page, 5));
   }, []);
 
-  // Handler Click
+  // Handler Event
+
+  //Edit
+  const handleClose = () => {
+    setShow(false);
+  };
+
+  const handleSave = () => {
+    setShow(false);
+    navigation("/products");
+  };
+  const handleShow = () => setShow(true);
+
+  //Delete
+  const deleteHandler = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire("Deleted!", "Your file has been deleted.", "success");
+      }
+    });
+  };
 
   // Search
   const __handleSearch = (event) => {
@@ -92,11 +130,94 @@ const Products = () => {
                   <td>
                     <span>Rp.{product.price}</span>
                   </td>
+                  <td>
+                    <div
+                      class="btn-group"
+                      role="group"
+                      aria-label="Basic example"
+                    >
+                      <button
+                        onClick={() => handleShow()}
+                        type="button"
+                        class="btn btn-secondary"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteHandler()}
+                        type="button"
+                        class="btn btn-danger"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           ) : null}
         </table>
+
+        <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Product</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form>
+              <div className="text-center mb-3">
+                <div>
+                  <img
+                    src="https://reqres.in/img/faces/7-image.jpg"
+                    className="dashboard-content-avatar"
+                    alt="Titan Nugraha"
+                  />
+                </div>
+                <span>Titan Nugraha</span>
+              </div>
+              <div className="mb-3">
+                <label for="exampleInputPassword1" class="form-label">
+                  Name
+                </label>
+                <input type="name" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">
+                  Genre
+                </label>
+                <select className="form-control">
+                  <option value="Action">Action</option>
+                  <option value="Sport">Sport</option>
+                  <option value="Adventurer">Adventurer</option>
+                  <option value="RPG">RPG</option>
+                </select>
+              </div>
+              <div className="mb-3">
+                <label for="exampleInputPassword1" class="form-label">
+                  Price
+                </label>
+                <input type="number" class="form-control" />
+              </div>
+              <div className="mb-3">
+                <label for="exampleInputPassword1" class="form-label">
+                  Upload New Picture
+                </label>
+                <input
+                  type="file"
+                  class="form-control"
+                  id="exampleInputPassword1"
+                />
+              </div>
+            </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleClose}>
+              Submit
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
         {products.length !== 0 ? (
           <div className="dashboard-content-footer">

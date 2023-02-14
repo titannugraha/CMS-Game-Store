@@ -48,6 +48,18 @@ const Header = ({ btnText, event }) => {
                 />
               </div>
               <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">
+                  Genre
+                </label>
+                <select className="form-control">
+                  <option selected>Open this select menu</option>
+                  <option value="Action">Action</option>
+                  <option value="Sport">Sport</option>
+                  <option value="Adventurer">Adventurer</option>
+                  <option value="RPG">RPG</option>
+                </select>
+              </div>
+              <div class="mb-3">
                 <label for="exampleInputPassword1" class="form-label">
                   Image
                 </label>

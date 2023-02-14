@@ -4,6 +4,9 @@ import Header from "../../components/Header";
 import all_orders from "../../constants/orders";
 import { calculateRange, sliceData } from "../../utils/table-pagination";
 
+import Dropdown from "react-bootstrap/Dropdown";
+
+import { BsThreeDotsVertical } from "react-icons/bs";
 import "../styles.css";
 import DoneIcon from "../../assets/icons/done.svg";
 import CancelIcon from "../../assets/icons/cancel.svg";
@@ -68,6 +71,7 @@ const Orders = () => {
             <th>COSTUMER</th>
             <th>PRODUCT</th>
             <th>PRICE</th>
+            <th>Action</th>
           </thead>
 
           {orders.length !== 0 ? (
@@ -121,6 +125,21 @@ const Orders = () => {
                   </td>
                   <td>
                     <span>Rp.{order.price}</span>
+                  </td>
+                  <td>
+                    <Dropdown>
+                      <Dropdown.Toggle variant="light">
+                        <BsThreeDotsVertical />
+                      </Dropdown.Toggle>
+
+                      <Dropdown.Menu>
+                        <Dropdown.Item href="#/action-1">Paid</Dropdown.Item>
+                        <Dropdown.Item href="#/action-2">
+                          Canceled
+                        </Dropdown.Item>
+                        <Dropdown.Item href="#/action-3">Pending</Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
                   </td>
                 </tr>
               ))}
