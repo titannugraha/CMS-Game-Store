@@ -1,82 +1,110 @@
 import React, { useState, useEffect } from "react";
 
-import { useNavigate } from "react-router-dom";
+import ReactPaginate from "react-paginate";
+import axios from "axios";
 
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
+import { useNavigate } from "react-router-dom";
 
 import Header from "../../components/Header";
 
-import all_users from "../../constants/users";
-import { calculateRange, sliceData } from "../../utils/table-pagination";
-
 import Swal from "sweetalert2";
 import "../styles.css";
+import EditUser from "../../components/EditUser";
+import { deleteUser, userById, userPut } from "../../fetch/userFetch";
 
 const Users = ({ handlerClick }) => {
-  const [search, setSearch] = useState("");
-  const [users, setUsers] = useState(all_users);
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [pages, setPages] = useState(0);
+  const [rows, setRows] = useState(0);
+  const [keywords, setKeywords] = useState("");
+  const [query, setQuery] = useState("");
+  const [msg, setMsg] = useState("");
   const [show, setShow] = useState(false);
   const navigation = useNavigate();
+  const [id, setId] = useState(0);
+  const [formUser, setFormUser] = useState([
+    {
+      username: "",
+      email: "",
+      age: 0,
+      image: "",
+    },
+  ]);
 
   useEffect(() => {
-    setPagination(calculateRange(all_users, 5));
-    setUsers(sliceData(all_users, page, 5));
-  }, []);
+    getData();
+  }, [page, keywords]);
 
-  // Handler Event
-
-  //Edit
-  const handleClose = () => {
-    setShow(false);
-  };
-
-  const handleSave = () => {
-    setShow(false);
-    navigation("/products");
-  };
-  const handleShow = () => setShow(true);
-
-  //Delete
-  const deleteHandler = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire("Deleted!", "Your file has been deleted.", "success");
-      }
-    });
-  };
-
-  // Search
-  const __handleSearch = (event) => {
-    setSearch(event.target.value);
-    if (event.target.value !== "") {
-      let search_results = users.filter(
-        (item) =>
-          item.first_name.toLowerCase().includes(search.toLowerCase()) ||
-          item.last_name.toLowerCase().includes(search.toLowerCase()) ||
-          item.username.toLowerCase().includes(search.toLowerCase()) ||
-          item.product.toLowerCase().includes(search.toLowerCase())
-      );
-      setUsers(search_results);
-    } else {
-      __handleChangePage(1);
+  //Axios Event
+  const getData = async () => {
+    try {
+      const response = await axios({
+        method: "GET",
+        url: `http://localhost:3000/api/users?search_query=${keywords}&page=${page}&limit=${limit}`,
+        headers: { user_token: localStorage.getItem("user_token") },
+      });
+      setUsers(response.data.result);
+      setPage(response.data.page);
+      setPages(response.data.totalPage);
+      setRows(response.data.totalRows);
+    } catch (err) {
+      console.log(err);
     }
   };
 
-  // Change Page
-  const __handleChangePage = (new_page) => {
-    setPage(new_page);
-    setUsers(sliceData(all_users, new_page, 5));
+  //Update
+  userById(id, (result) => {
+    setFormUser({
+      username: result.username,
+      email: result.email,
+      age: result.age,
+      image: result.image,
+    });
+  });
+  // Handler Event
+
+  //Change Page
+  const changePage = ({ selected }) => {
+    setPage(selected);
+    if (selected === 9) {
+      setMsg(
+        "Jika tidak menemukan data yang Anda cari, silahkan cari data dengan kata kunci spesifik!"
+      );
+    } else {
+      setMsg("");
+    }
+  };
+
+  //Search
+  const searchData = (e) => {
+    e.preventDefault();
+    setPage(0);
+    setMsg("");
+    setKeywords(query);
+  };
+
+  // //Edit
+  const handleClose = () => {
+    setShow(false);
+  };
+  const handlerSubmit = () => {
+    const formData = new FormData();
+    formData.append("username", formUser.username);
+    formData.append("email", formUser.email);
+    formData.append("age", formUser.age);
+    userPut(id, formData);
+    setShow(false);
+  };
+  const handleShow = (id) => {
+    setId(id);
+    setShow(true);
+  };
+
+  //Delete
+  const deleteHandler = (id) => {
+    deleteUser(id)
   };
 
   return (
@@ -86,15 +114,19 @@ const Users = ({ handlerClick }) => {
       <div className="dashboard-content-container">
         <div className="dashboard-content-header">
           <h2>User List</h2>
-          <div className="dashboard-content-search">
-            <input
-              type="text"
-              value={search}
-              placeholder="Search.."
-              className="dashboard-content-input"
-              onChange={(e) => __handleSearch(e)}
-            />
-          </div>
+          <form onSubmit={(e) => searchData(e)}>
+            <div className="dashboard-content-search">
+              <input
+                type="text"
+                className="dashboard-content-input"
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Find something here..."
+              />
+              <button type="submit" className="btn btn-info">
+                Search
+              </button>
+            </div>
+          </form>
         </div>
 
         <table>
@@ -119,14 +151,14 @@ const Users = ({ handlerClick }) => {
                   <td>
                     <div>
                       <img
-                        src={user.avatar}
+                        src={user.image}
                         className="dashboard-content-avatar"
-                        alt={user.first_name + " " + user.last_name}
+                        alt={user.username}
                       />
                     </div>
                   </td>
                   <td>
-                    <span>{user.role}</span>
+                    {user.id === 1 ? <span>Admin</span> : <span>Customer</span>}
                   </td>
                   <td>
                     <div
@@ -135,16 +167,16 @@ const Users = ({ handlerClick }) => {
                       aria-label="Basic example"
                     >
                       <button
-                        onClick={() => handleShow()}
-                        type="button"
-                        class="btn btn-secondary"
+                        class="btn btn-secondary "
+                        onClick={() => handleShow(user.id)}
                       >
                         Edit
                       </button>
+
                       <button
-                        onClick={() => deleteHandler()}
+                        onClick={() => deleteHandler(user.id)}
+                        className="btn btn-danger"
                         type="button"
-                        class="btn btn-danger"
                       >
                         Delete
                       </button>
@@ -156,81 +188,31 @@ const Users = ({ handlerClick }) => {
           ) : null}
         </table>
 
-        <Modal show={show} onHide={handleClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>Edit Product</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <form>
-              <div className="text-center mb-3">
-                <div>
-                  <img
-                    src="https://reqres.in/img/faces/7-image.jpg"
-                    className="dashboard-content-avatar"
-                    alt="Titan Nugraha"
-                  />
-                </div>
-                <span>Titan Nugraha</span>
-              </div>
-              <div className="mb-3">
-                <label for="exampleInputPassword1" class="form-label">
-                  Username
-                </label>
-                <input type="name" class="form-control" />
-              </div>
-              <div className="mb-3">
-                <label for="exampleInputPassword1" class="form-label">
-                  Email
-                </label>
-                <input type="email" class="form-control" />
-              </div>
-              <div className="mb-3">
-                <label for="exampleInputPassword1" class="form-label">
-                  Age
-                </label>
-                <input type="number" class="form-control" />
-              </div>
-              <div className="mb-3">
-                <label for="exampleInputPassword1" class="form-label">
-                  Upload New Picture
-                </label>
-                <input
-                  type="file"
-                  class="form-control"
-                  id="exampleInputPassword1"
-                />
-              </div>
-            </form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={handleClose}>
-              Submit
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        <EditUser
+          formUser={formUser}
+          setFormUser={setFormUser}
+          show={show}
+          handleClose={handleClose}
+          handlerSubmit={handlerSubmit}
+        />
+        <p>
+          Total Rows: {rows} Page: {rows ? page + 1 : 0} of {pages}
+        </p>
+        <p className="has-text-centered has-text-danger">{msg}</p>
 
-      
-
-        {users.length !== 0 ? (
-          <div className="dashboard-content-footer">
-            {pagination.map((item, index) => (
-              <span
-                key={index}
-                className={item === page ? "active-pagination" : "pagination"}
-                onClick={() => __handleChangePage(item)}
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <div className="dashboard-content-footer">
-            <span className="empty-table">No data</span>
-          </div>
-        )}
+        <ReactPaginate
+          previousLabel={"< Prev"}
+          nextLabel={"Next >"}
+          breakLabel={"..."}
+          pageCount={Math.min(10, pages)}
+          onPageChange={(e) => changePage(e)}
+          containerClassName={"pagination-list"}
+          pageLinkClassName={"pagination-link"}
+          previousLinkClassName={"pagination-link"}
+          nextLinkClassName={"pagination-link"}
+          activeLinkClassName={"pagination-link is-current"}
+          disabledLinkClassName={"pagination-link is-disabled"}
+        />
       </div>
     </div>
   );
