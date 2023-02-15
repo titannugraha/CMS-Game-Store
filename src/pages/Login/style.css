@@ -1,0 +1,58 @@
+/* @import url("../../styles/index.css"); */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+
+:root {
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  --theme-primary: #395144;
+  --theme-secondary: #4e6c50;
+  --theme-font-primary: #f0ebce;
+  --theme-font-secondary: #aa8b56;
+}
+
+.main-login {
+  height: 100vh;
+  background-color: var(--theme-primary);
+}
+
+.cards {
+  background-color: var(--theme-secondary);
+  margin-top: 20vh;
+}
+
+.card-title {
+  color: var(--theme-font-primary);
+}
+
+.form-check-label {
+  color: var(--theme-font-primary);
+}
+
+.d-grid button {
+  background-color: var(--theme-font-secondary);
+  padding: 4px 8px;
+  border: 1px solid;
+  color: var(--theme-font-primary);
+  border-radius: 8px;
+  font-weight: bold;
+  float: right;
+}
+
+.d-grid button:hover {
+  background-color: var(--theme-font-primary);
+  border: 1px solid;
+  color: var(--theme-font-secondary);
+}
+
+.signup-grid h6 {
+  color: var(--theme-font-primary);
+}
+
+.signup-grid a {
+  text-decoration: none;
+  color: var(--theme-font-primary);
+}
+
+.signup-grid a:hover {
+  color: var(--theme-font-secondary);
+}

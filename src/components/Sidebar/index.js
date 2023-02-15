@@ -7,7 +7,9 @@ import "./styles.css";
 import logo from "../../assets/images/white-logo.png";
 import LogoutIcon from "../../assets/icons/logout.svg";
 
-const Sidebar = ({ menu }) => {
+const Sidebar = (props) => {
+  const { loginStatus, loginHandler, menu } = props
+
   const location = useLocation();
 
   const [active, setActive] = useState(1);
@@ -23,6 +25,15 @@ const Sidebar = ({ menu }) => {
   const __navigate = (id) => {
     setActive(id);
   };
+
+  const logoutHandler = () => {
+    if (loginStatus) {
+        localStorage.clear()
+        loginHandler(false)
+    } else {
+        loginHandler(true)
+    }
+}
 
   return (
     <nav className="sidebar">
@@ -40,7 +51,7 @@ const Sidebar = ({ menu }) => {
             ))}
           </div>
 
-          <div className="sidebar-footer">
+          <div className="sidebar-footer" onClick={logoutHandler}>
             <span className="sidebar-item-label">Logout</span>
             <img
               src={LogoutIcon}
