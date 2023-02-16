@@ -6,8 +6,7 @@ import Modal from "react-bootstrap/Modal";
 import { useNavigate } from "react-router-dom";
 
 import "./styles.css";
-import NotificationIcon from "../../assets/icons/notification.svg";
-import SettingsIcon from "../../assets/icons/settings.svg";
+import HeaderRight from "./right";
 
 const Header = ({ btnText, event }) => {
   const [show, setShow] = useState(false);
@@ -117,22 +116,7 @@ const Header = ({ btnText, event }) => {
         </Modal>
       )}
 
-      <div className="dashbord-header-right">
-        <img
-          src={NotificationIcon}
-          alt="notification-icon"
-          className="dashbord-header-icon"
-        />
-        <img
-          src={SettingsIcon}
-          alt="settings-icon"
-          className="dashbord-header-icon"
-        />
-        <img
-          className="dashbord-header-avatar"
-          src="https://reqres.in/img/faces/9-image.jpg"
-        />
-      </div>
+      <HeaderRight />
     </div>
   );
 };

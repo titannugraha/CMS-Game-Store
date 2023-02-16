@@ -45,7 +45,7 @@ const Users = ({ handlerClick }) => {
         url: `http://localhost:3000/api/users?search_query=${keywords}&page=${page}&limit=${limit}`,
         headers: { user_token: localStorage.getItem("user_token") },
       });
-      setUsers(response.data.result);
+      setUsers(response.data);
       setPage(response.data.page);
       setPages(response.data.totalPage);
       setRows(response.data.totalRows);
@@ -162,12 +162,12 @@ const Users = ({ handlerClick }) => {
                   </td>
                   <td>
                     <div
-                      class="btn-group"
+                      className="btn-group"
                       role="group"
                       aria-label="Basic example"
                     >
                       <button
-                        class="btn btn-secondary "
+                        className="btn btn-secondary "
                         onClick={() => handleShow(user.id)}
                       >
                         Edit

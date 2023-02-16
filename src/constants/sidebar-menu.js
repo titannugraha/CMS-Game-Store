@@ -23,6 +23,12 @@ const sidebar_menu = [
         title: 'Products',
     },
     {
+        id: 4,
+        icon: ShippingIcon,
+        path: '/genres',
+        title: 'Genres',
+    },
+    {
         id: 5,
         icon: UserIcon,
         path: '/users',

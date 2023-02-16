@@ -38,7 +38,7 @@ const Sidebar = (props) => {
   return (
     <nav className="sidebar">
       <div className="sidebar-container">
-        <div className="sidebar-logo-container">
+        <div className="sidebar-logo-container d-flex justify-content-center">
           <img src={logo} alt="logo" />
         </div>
 

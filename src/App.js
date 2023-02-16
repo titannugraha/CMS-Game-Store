@@ -11,6 +11,7 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.css";
 import Products from "./pages/Products";
 import Login from "./pages/Login";
+import Genres from "./pages/Genres";
 
 function App() {
   const [loginStatus, setLoginStatus] = useState(false)
@@ -42,6 +43,7 @@ function App() {
                 <Route exact path="/" element={<div></div>} />
                 <Route exact path="/orders" element={<Orders />} />
                 <Route exact path="/products" element={<Products />} />
+                <Route exact path="/genres" element={<Genres />} />
                 <Route exact path="/users" element={<Users />} />
               </Routes>
             </div>

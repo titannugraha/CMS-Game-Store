@@ -13,10 +13,9 @@ const Login = (props) => {
     const submitHandler = (e) => {
         e.preventDefault()
         userLogin(form, result => {
-            localStorage.setItem('user_token', result.user_token)
-            checkAdmin(result.user_token, result => {
+            checkAdmin(result.user_token, res => {
+                localStorage.setItem('user_token', result.user_token)
                 loginHandler(true)
-                console.log(result)
             })
         })
     }

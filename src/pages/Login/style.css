@@ -4,10 +4,14 @@
 :root {
   font-family: "Open Sans", sans-serif;
   font-size: 16px;
-  --theme-primary: #395144;
-  --theme-secondary: #4e6c50;
+  --theme-primary: #015c92;
+  --theme-secondary: #2d83b5;
   --theme-font-primary: #f0ebce;
-  --theme-font-secondary: #aa8b56;
+  --theme-font-secondary: #89ccf6;
+}
+
+body {
+  background-color: var(--theme-primary);
 }
 
 .main-login {
