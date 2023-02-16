@@ -39,7 +39,7 @@ function App() {
             <div className="dashboard-body">
               <Routes>
                 <Route path="*" element={<div></div>} />
-                <Route exact path="/" element={<div></div>} />
+                <Route exact path="/" element={<Orders />} />
                 <Route exact path="/orders" element={<Orders />} />
                 <Route exact path="/products" element={<Products />} />
                 <Route exact path="/users" element={<Users />} />

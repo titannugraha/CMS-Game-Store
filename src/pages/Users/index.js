@@ -111,7 +111,7 @@ const Users = ({ handlerClick }) => {
 
   return (
     <div className="dashboard-content">
-      <Header btnText="Back to Home" event="user" />
+      <Header btnText="Welcome Back" event="user" />
 
       <div className="dashboard-content-container">
         <div className="dashboard-content-header">

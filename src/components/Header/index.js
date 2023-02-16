@@ -38,6 +38,10 @@ const Header = ({ btnText, event }) => {
     setShow(false);
   };
 
+  const handleYes= () =>{
+    navigation('/')
+  }
+
   const handlerSave = () => {
     addGame(formGame);
     console.log(formGame);
@@ -182,38 +186,9 @@ const Header = ({ btnText, event }) => {
           </Modal.Footer>
         </Modal>
       ) : (
-        <Modal show={show} onHide={handleClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>Modal heading</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>Are you sure ? </Modal.Body>
-          <Modal.Footer>
-            <button className="btn btn-secondary" onClick={() => handleClose}>
-              Close
-            </button>
-            <button onClick={() => handleClose()} className="btn btn-info">
-              Yes !
-            </button>
-          </Modal.Footer>
-        </Modal>
+        null
       )}
 
-      <div className="dashbord-header-right">
-        <img
-          src={NotificationIcon}
-          alt="notification-icon"
-          className="dashbord-header-icon"
-        />
-        <img
-          src={SettingsIcon}
-          alt="settings-icon"
-          className="dashbord-header-icon"
-        />
-        <img
-          className="dashbord-header-avatar"
-          src="https://reqres.in/img/faces/9-image.jpg"
-        />
-      </div>
     </div>
   );
 };

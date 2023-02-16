@@ -41,7 +41,7 @@ const Orders = () => {
 
   return (
     <div className="dashboard-content">
-      <Header btnText="Back to home" event="home" />
+      <Header btnText="Welcome Back" event="home" />
 
       <div className="dashboard-content-container">
         <div className="dashboard-content-header">
