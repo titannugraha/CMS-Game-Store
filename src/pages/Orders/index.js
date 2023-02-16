@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "../../components/Header";
 
-import all_orders from "../../constants/orders";
-import { calculateRange, sliceData } from "../../utils/table-pagination";
-
+import Modal from "react-bootstrap/Modal";
 import Dropdown from "react-bootstrap/Dropdown";
 
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -11,38 +9,34 @@ import "../styles.css";
 import DoneIcon from "../../assets/icons/done.svg";
 import CancelIcon from "../../assets/icons/cancel.svg";
 import RefundedIcon from "../../assets/icons/refunded.svg";
+import { editOrder, getOrder, getOrderId } from "../../fetch/orderFetching";
 
 const Orders = () => {
-  const [search, setSearch] = useState("");
-  const [orders, setOrders] = useState(all_orders);
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState([]);
-
+  const [id, setId] = useState(false);
+  const [show, setShow] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [formStatus, setFormStatus] = useState([
+    {
+      status: "",
+    },
+  ]);
   useEffect(() => {
-    setPagination(calculateRange(all_orders, 5));
-    setOrders(sliceData(all_orders, page, 5));
+    getOrder((result) => {
+      setOrders(result);
+    });
   }, []);
 
-  // Search
-  const __handleSearch = (event) => {
-    setSearch(event.target.value);
-    if (event.target.value !== "") {
-      let search_results = orders.filter(
-        (item) =>
-          item.first_name.toLowerCase().includes(search.toLowerCase()) ||
-          item.last_name.toLowerCase().includes(search.toLowerCase()) ||
-          item.product.toLowerCase().includes(search.toLowerCase())
-      );
-      setOrders(search_results);
-    } else {
-      __handleChangePage(1);
-    }
+  const URL = "http://localhost:3000/uploads/";
+
+  //Handler Click
+  const handleClose = () => {
+    setShow(false);
+    editOrder(id, formStatus);
   };
 
-  // Change Page
-  const __handleChangePage = (new_page) => {
-    setPage(new_page);
-    setOrders(sliceData(all_orders, new_page, 5));
+  const handlerPaid = (id) => {
+    setShow(true);
+    setId(id)
   };
 
   return (
@@ -52,15 +46,6 @@ const Orders = () => {
       <div className="dashboard-content-container">
         <div className="dashboard-content-header">
           <h2>Orders List</h2>
-          <div className="dashboard-content-search">
-            <input
-              type="text"
-              value={search}
-              placeholder="Search.."
-              className="dashboard-content-input"
-              onChange={(e) => __handleSearch(e)}
-            />
-          </div>
         </div>
 
         <table>
@@ -82,7 +67,7 @@ const Orders = () => {
                     <span>{order.id}</span>
                   </td>
                   <td>
-                    <span>{order.date}</span>
+                    <span>{order.createdAt}</span>
                   </td>
                   <td>
                     <div>
@@ -98,7 +83,7 @@ const Orders = () => {
                           alt="canceled-icon"
                           className="dashboard-content-icon"
                         />
-                      ) : order.status === "Refunded" ? (
+                      ) : order.status === "Pending" ? (
                         <img
                           src={RefundedIcon}
                           alt="refunded-icon"
@@ -111,20 +96,18 @@ const Orders = () => {
                   <td>
                     <div>
                       <img
-                        src={order.avatar}
+                        src={URL + order.user.image}
                         className="dashboard-content-avatar"
-                        alt={order.first_name + " " + order.last_name}
+                        alt={order.user.name}
                       />
-                      <span>
-                        {order.first_name} {order.last_name}
-                      </span>
+                      <span>{order.user.name}</span>
                     </div>
                   </td>
                   <td>
-                    <span>{order.product}</span>
+                    <span>{order.orders[0].game.name}</span>
                   </td>
                   <td>
-                    <span>Rp.{order.price}</span>
+                    <span>Rp.{order.total_price}</span>
                   </td>
                   <td>
                     <Dropdown>
@@ -133,11 +116,9 @@ const Orders = () => {
                       </Dropdown.Toggle>
 
                       <Dropdown.Menu>
-                        <Dropdown.Item href="#/action-1">Paid</Dropdown.Item>
-                        <Dropdown.Item href="#/action-2">
-                          Canceled
+                        <Dropdown.Item onClick={() => handlerPaid(order.id)}>
+                          Change Status
                         </Dropdown.Item>
-                        <Dropdown.Item href="#/action-3">Pending</Dropdown.Item>
                       </Dropdown.Menu>
                     </Dropdown>
                   </td>
@@ -146,24 +127,37 @@ const Orders = () => {
             </tbody>
           ) : null}
         </table>
-
-        {orders.length !== 0 ? (
-          <div className="dashboard-content-footer">
-            {pagination.map((item, index) => (
-              <span
-                key={index}
-                className={item === page ? "active-pagination" : "pagination"}
-                onClick={() => __handleChangePage(item)}
+        <Modal show={show} onHide={handleClose} id={id}>
+          <Modal.Header closeButton>
+            <Modal.Title>Change Status</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form>
+              <select
+                className="form-control"
+                onChange={(e) =>
+                  setFormStatus({ ...formStatus, status: e.target.value })
+                }
               >
-                {item}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <div className="dashboard-content-footer">
-            <span className="empty-table">No data</span>
-          </div>
-        )}
+                <option selected disable>
+                  Choose the status
+                </option>
+                <option value="Paid"> Paid </option>
+                <option value="Canceled"> Canceled </option>
+                <option value="Pending"> Pending</option>
+              </select>
+            </form>
+            Are You Sure for change the status ?
+          </Modal.Body>
+          <Modal.Footer>
+            <button className="btn btn-secondary" onClick={handleClose}>
+              Close
+            </button>
+            <button className="btn btn-primary" onClick={handleClose}>
+              Save Changes
+            </button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );

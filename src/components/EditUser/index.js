@@ -18,15 +18,6 @@ const EditUser = (props) => {
                   src="https://reqres.in/img/faces/7-image.jpg"
                   className="dashboard-content-avatar"
                 />
-                <div>
-                  <span>Username : {formUser.username}</span>
-                </div>
-                <div>
-                  <span>Email : {formUser.email}</span>
-                </div>
-                <div>
-                  <span>Age : {formUser.age}</span>
-                </div>
               </div>
             </div>
             <div className="mb-3">
@@ -38,10 +29,9 @@ const EditUser = (props) => {
                   setFormUser({ ...formUser, username: e.target.value })
                 }
                 value={formUser.username}
-                type="name"
+                type="text"
                 name='username'
                 className="form-control"
-                id="exampleFormControlInput1"
               />
             </div>
             <div className="mb-3">
@@ -52,6 +42,7 @@ const EditUser = (props) => {
                 onChange={(e) =>
                   setFormUser({ ...formUser, email: e.target.value })
                 }
+                value={formUser.email}
                 type="email"
                 class="form-control"
               />

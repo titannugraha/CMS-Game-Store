@@ -3,14 +3,16 @@ import React, { useState, useEffect } from "react";
 import ReactPaginate from "react-paginate";
 import axios from "axios";
 
-import { useNavigate } from "react-router-dom";
+import Modal from "react-bootstrap/Modal";
+
+import { Link, useNavigate } from "react-router-dom";
 
 import Header from "../../components/Header";
 
 import Swal from "sweetalert2";
 import "../styles.css";
 import EditUser from "../../components/EditUser";
-import { deleteUser, userById, userPut } from "../../fetch/userFetch";
+import { deleteUser, editUser, userById, userPut } from "../../fetch/userFetch";
 
 const Users = ({ handlerClick }) => {
   const [users, setUsers] = useState([]);
@@ -23,15 +25,17 @@ const Users = ({ handlerClick }) => {
   const [msg, setMsg] = useState("");
   const [show, setShow] = useState(false);
   const navigation = useNavigate();
-  const [id, setId] = useState(0);
   const [formUser, setFormUser] = useState([
     {
+      id: 0,
       username: "",
       email: "",
       age: 0,
       image: "",
     },
   ]);
+
+  const Url = "http://localhost:3000/uploads/";
 
   useEffect(() => {
     getData();
@@ -55,14 +59,7 @@ const Users = ({ handlerClick }) => {
   };
 
   //Update
-  userById(id, (result) => {
-    setFormUser({
-      username: result.username,
-      email: result.email,
-      age: result.age,
-      image: result.image,
-    });
-  });
+
   // Handler Event
 
   //Change Page
@@ -90,21 +87,26 @@ const Users = ({ handlerClick }) => {
     setShow(false);
   };
   const handlerSubmit = () => {
-    const formData = new FormData();
-    formData.append("username", formUser.username);
-    formData.append("email", formUser.email);
-    formData.append("age", formUser.age);
-    userPut(id, formData);
+    editUser(formUser.id, formUser);
     setShow(false);
   };
   const handleShow = (id) => {
-    setId(id);
+    userById(id, (result) => {
+      setFormUser({
+        id: result.id,
+        username: result.username,
+        email: result.email,
+        age: result.age,
+        image: result.image,
+      });
+      console.log(formUser);
+    });
     setShow(true);
   };
 
   //Delete
   const deleteHandler = (id) => {
-    deleteUser(id)
+    deleteUser(id);
   };
 
   return (
@@ -151,7 +153,7 @@ const Users = ({ handlerClick }) => {
                   <td>
                     <div>
                       <img
-                        src={user.image}
+                        src={Url + user.image}
                         className="dashboard-content-avatar"
                         alt={user.username}
                       />
@@ -188,13 +190,86 @@ const Users = ({ handlerClick }) => {
           ) : null}
         </table>
 
-        <EditUser
-          formUser={formUser}
-          setFormUser={setFormUser}
-          show={show}
-          handleClose={handleClose}
-          handlerSubmit={handlerSubmit}
-        />
+        <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Product</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form>
+              <div className="text-center mb-3">
+                <div>
+                  <Link to={Url + formUser.image}>
+                    <img
+                      src={Url + formUser.image}
+                      className="rounded"
+                    />
+                  </Link>
+                </div>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="exampleFormControlInput1" class="form-label">
+                  Username
+                </label>
+                <input
+                  onChange={(e) =>
+                    setFormUser({ ...formUser, username: e.target.value })
+                  }
+                  value={formUser.username}
+                  type="text"
+                  name="username"
+                  className="form-control"
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="exampleFormControlInput1" class="form-label">
+                  Email
+                </label>
+                <input
+                  onChange={(e) =>
+                    setFormUser({ ...formUser, email: e.target.value })
+                  }
+                  value={formUser.email}
+                  type="email"
+                  class="form-control"
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="exampleFormControlInput1" class="form-label">
+                  Age
+                </label>
+                <input
+                  onChange={(e) =>
+                    setFormUser({ ...formUser, age: e.target.value })
+                  }
+                  value={formUser.age}
+                  type="number"
+                  class="form-control"
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="exampleFormControlInput1" class="form-label">
+                  Upload New Picture
+                </label>
+                <input
+                  onChange={(e) =>
+                    setFormUser({ ...formUser, image: e.target.files[0] })
+                  }
+                  type="file"
+                  class="form-control"
+                  id="exampleInputPassword1"
+                />
+              </div>
+            </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <button className="btn btn-secondary" onClick={handleClose}>
+              Close
+            </button>
+            <button onClick={() => handlerSubmit()} className="btn btn-info">
+              Submit
+            </button>
+          </Modal.Footer>
+        </Modal>
         <p>
           Total Rows: {rows} Page: {rows ? page + 1 : 0} of {pages}
         </p>

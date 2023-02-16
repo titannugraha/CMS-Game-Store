@@ -92,6 +92,7 @@ const userPut = async (data, cb) => {
       showConfirmButton: false,
       timer: 1500,
     });
+    window.location.reload(false);
   } catch (error) {
     console.log(error);
     Swal.fire({
@@ -108,15 +109,16 @@ const editUser = async (id, data) => {
   try {
     let result = await axios({
       method: "PUT",
-      url: URL + `${id}`,
+      url: URL + `/${id}`,
       headers: {
         "Content-Type": "multipart/form-data",
         user_token: localStorage.getItem("user_token"),
       },
-      data: data,
+      data,
     });
     console.log(result.data);
     Swal.fire("Edit Item", "Your Data has been Updated!", "success");
+    window.location.reload(false);
   } catch (err) {
     console.log(err);
   }
@@ -152,12 +154,13 @@ const deleteUser = async (id) => {
           url: URL + `/${id}`,
           headers: { user_token: localStorage.getItem("user_token") },
         });
-        
+
         Swal.fire(
           "Deleted!",
           `Your result with id ${id} has been deleted.`,
           "success"
         );
+        window.location.reload(false);
       }
     });
   } catch (err) {
@@ -172,4 +175,5 @@ export {
   getUser,
   userById,
   deleteUser,
+  editUser,
 };

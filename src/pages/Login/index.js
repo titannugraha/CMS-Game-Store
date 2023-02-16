@@ -30,7 +30,7 @@ const Login = (props) => {
 
     return (
         <>
-            <div className="container">
+            <div >
                 <div className="row main-login">
                     <div className="col-sm-9 col-md-7 col-lg-5 mx-auto">
                         <div className="cards border-0 shadow rounded-3">

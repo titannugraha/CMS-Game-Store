@@ -1,81 +1,131 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
 import Header from "../../components/Header";
 
-import all_products from "../../constants/products";
-import { calculateRange, sliceData } from "../../utils/table-pagination";
-
 import Swal from "sweetalert2";
+import ReactPaginate from "react-paginate";
 
 import "../styles.css";
+import {
+  deleteGames,
+  editGames,
+  getGenre,
+  getId,
+} from "../../fetch/gameFetching";
 
 const Products = () => {
-  const [search, setSearch] = useState("");
-  const [products, setProducts] = useState(all_products);
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState([]);
+  const [genre, setGenre] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [pages, setPages] = useState(0);
+  const [rows, setRows] = useState(0);
+  const [keywords, setKeywords] = useState("");
+  const [query, setQuery] = useState("");
+  const [msg, setMsg] = useState("");
   const [show, setShow] = useState(false);
+  const [formGame, setFormGame] = useState([
+    {
+      idGames: 0,
+      name: "",
+      price: 0,
+      release_date: new Date(),
+      developer: "",
+      publisher: "",
+      desc: "",
+      genres: 0,
+      image: "",
+      genresName: "",
+    },
+  ]);
 
   const navigation = useNavigate();
+  const Url = "http://localhost:3000/uploads/";
 
   useEffect(() => {
-    setPagination(calculateRange(all_products, 5));
-    setProducts(sliceData(all_products, page, 5));
-  }, []);
+    getProduct();
+    getGenre((result) => {
+      setGenre(result);
+    });
+    console.log(products);
+  }, [page, keywords]);
+
+  //Axios Event
+  const getProduct = async () => {
+    try {
+      const response = await axios({
+        method: "GET",
+        url: `http://localhost:3000/api/games?search_query=${keywords}&page=${page}&limit=${limit}`,
+        headers: { user_token: localStorage.getItem("user_token") },
+      });
+      setProducts(response.data.result);
+      setPage(response.data.page);
+      setPages(response.data.totalPage);
+      setRows(response.data.totalRows);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   // Handler Event
+  //Change Page
+  const changePage = ({ selected }) => {
+    setPage(selected);
+    if (selected === 9) {
+      setMsg(
+        "Jika tidak menemukan data yang Anda cari, silahkan cari data dengan kata kunci spesifik!"
+      );
+    } else {
+      setMsg("");
+    }
+  };
+
+  //Search
+  const searchData = (e) => {
+    e.preventDefault();
+    setPage(0);
+    setMsg("");
+    setKeywords(query);
+  };
 
   //Edit
   const handleClose = () => {
     setShow(false);
   };
 
-  const handleSave = () => {
+  const handlerSubmit = () => {
+    editGames(formGame.idGames, formGame, (result) => {
+      console.log(result);
+    });
     setShow(false);
-    navigation("/products");
   };
-  const handleShow = () => setShow(true);
+  const handleShow = (id) => {
+    getId(id, (result) => {
+      setFormGame({
+        idGames: result.id,
+        name: result.name,
+        price: result.price,
+        release_date: result.gameProfile.release_date,
+        developer: result.gameProfile.developer,
+        publisher: result.gameProfile.publisher,
+        desc: result.gameProfile.desc,
+        genres: result.genres[0].id,
+        image: result.image,
+        genresName: result.genres[0].name,
+      });
+      console.log(formGame);
+    });
+    setShow(true);
+  };
 
   //Delete
-  const deleteHandler = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire("Deleted!", "Your file has been deleted.", "success");
-      }
-    });
-  };
-
-  // Search
-  const __handleSearch = (event) => {
-    setSearch(event.target.value);
-    if (event.target.value !== "") {
-      let search_results = products.filter(
-        (item) =>
-          item.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.genre.toLowerCase().includes(search.toLowerCase())
-      );
-      setProducts(search_results);
-    } else {
-      __handleChangePage(1);
-    }
-  };
-
-  // Change Page
-  const __handleChangePage = (new_page) => {
-    setPage(new_page);
-    setProducts(sliceData(all_products, new_page, 5));
+  const deleteHandler = (id) => {
+    deleteGames(id);
   };
 
   return (
@@ -85,15 +135,19 @@ const Products = () => {
       <div className="dashboard-content-container">
         <div className="dashboard-content-header">
           <h2>Product List</h2>
-          <div className="dashboard-content-search">
-            <input
-              type="text"
-              value={search}
-              placeholder="Search.."
-              className="dashboard-content-input"
-              onChange={(e) => __handleSearch(e)}
-            />
-          </div>
+          <form onSubmit={(e) => searchData(e)}>
+            <div className="dashboard-content-search">
+              <input
+                type="text"
+                className="dashboard-content-input"
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Find something here..."
+              />
+              <button type="submit" className="btn btn-info">
+                Search
+              </button>
+            </div>
+          </form>
         </div>
 
         <table>
@@ -119,13 +173,13 @@ const Products = () => {
                   <td>
                     <div>
                       <img
-                        src={product.image}
+                        src={Url + product.image}
                         className="dashboard-content-avatar"
                       />
                     </div>
                   </td>
                   <td>
-                    <span>{product.genre}</span>
+                    <span>{product.genres[0].name}</span>
                   </td>
                   <td>
                     <span>Rp.{product.price}</span>
@@ -137,14 +191,14 @@ const Products = () => {
                       aria-label="Basic example"
                     >
                       <button
-                        onClick={() => handleShow()}
+                        onClick={() => handleShow(product.id)}
                         type="button"
                         class="btn btn-secondary"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => deleteHandler()}
+                        onClick={() => deleteHandler(product.id)}
                         type="button"
                         class="btn btn-danger"
                       >
@@ -166,42 +220,131 @@ const Products = () => {
             <form>
               <div className="text-center mb-3">
                 <div>
-                  <img
-                    src="https://reqres.in/img/faces/7-image.jpg"
-                    className="dashboard-content-avatar"
-                    alt="Titan Nugraha"
-                  />
+                  <Link to={Url + formGame.image}>
+                    <img
+                      src={Url + formGame.image}
+                      className="img-fluid rounded-circle"
+                    />
+                  </Link>
                 </div>
-                <span>Titan Nugraha</span>
               </div>
-              <div className="mb-3">
-                <label for="exampleInputPassword1" class="form-label">
+
+              <div class="mb-3">
+                <label htmlFor="exampleInputEmail1" class="form-label">
                   Name
                 </label>
-                <input type="name" class="form-control" />
+                <input
+                  onChange={(e) =>
+                    setFormGame({ ...formGame, name: e.target.value })
+                  }
+                  value={formGame.name}
+                  type="name"
+                  class="form-control"
+                />
               </div>
+
               <div class="mb-3">
-                <label for="exampleInputEmail1" class="form-label">
-                  Genre
-                </label>
-                <select className="form-control">
-                  <option value="Action">Action</option>
-                  <option value="Sport">Sport</option>
-                  <option value="Adventurer">Adventurer</option>
-                  <option value="RPG">RPG</option>
-                </select>
-              </div>
-              <div className="mb-3">
-                <label for="exampleInputPassword1" class="form-label">
+                <label htmlFor="exampleInputEmail1" class="form-label">
                   Price
                 </label>
-                <input type="number" class="form-control" />
+                <input
+                  onChange={(e) =>
+                    setFormGame({ ...formGame, price: e.target.value })
+                  }
+                  value={formGame.price}
+                  type="number"
+                  class="form-control"
+                />
               </div>
-              <div className="mb-3">
-                <label for="exampleInputPassword1" class="form-label">
-                  Upload New Picture
+
+              <div class="mb-3">
+                <label htmlFor="exampleInputEmail1" class="form-label">
+                  Release Date
                 </label>
                 <input
+                  onChange={(e) =>
+                    setFormGame({ ...formGame, release_date: e.target.value })
+                  }
+                  value={formGame.release_date}
+                  type="name"
+                  disabled
+                  class="form-control"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label htmlFor="exampleInputEmail1" class="form-label">
+                  Developer
+                </label>
+                <input
+                  onChange={(e) =>
+                    setFormGame({ ...formGame, developer: e.target.value })
+                  }
+                  value={formGame.developer}
+                  type="name"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label htmlFor="exampleInputEmail1" class="form-label">
+                  Publisher
+                </label>
+                <input
+                  onChange={(e) =>
+                    setFormGame({ ...formGame, publisher: e.target.value })
+                  }
+                  value={formGame.publisher}
+                  type="name"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label htmlFor="exampleInputEmail1" class="form-label">
+                  Description
+                </label>
+                <textarea
+                  onChange={(e) =>
+                    setFormGame({ ...formGame, desc: e.target.value })
+                  }
+                  value={formGame.desc}
+                  type="name"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label htmlFor="exampleInputEmail1" class="form-label">
+                  Genre
+                </label>
+                <select
+                  className="form-control"
+                  onChange={(e) =>
+                    setFormGame({ ...formGame, genres: e.target.value })
+                  }
+                >
+                  <option selected disabled>
+                    {formGame.genresName}
+                  </option>
+                  {genre.map((result, index) => {
+                    const { id, name } = result;
+                    return (
+                      <option key={id} value={id}>
+                        {name}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div class="mb-3">
+                <label htmlFor="exampleInputPassword1" class="form-label">
+                  Image
+                </label>
+                <input
+                  onChange={(e) =>
+                    setFormGame({ ...formGame, image: e.target.files[0] })
+                  }
                   type="file"
                   class="form-control"
                   id="exampleInputPassword1"
@@ -210,32 +353,32 @@ const Products = () => {
             </form>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
+            <button className="btn btn-secondary" onClick={handleClose}>
               Close
-            </Button>
-            <Button variant="primary" onClick={handleClose}>
+            </button>
+            <button className="btn btn-info" onClick={() => handlerSubmit()}>
               Submit
-            </Button>
+            </button>
           </Modal.Footer>
         </Modal>
+        <p>
+          Total Rows: {rows} Page: {rows ? page + 1 : 0} of {pages}
+        </p>
+        <p className="has-text-centered has-text-danger">{msg}</p>
 
-        {products.length !== 0 ? (
-          <div className="dashboard-content-footer">
-            {pagination.map((item, index) => (
-              <span
-                key={index}
-                className={item === page ? "active-pagination" : "pagination"}
-                onClick={() => __handleChangePage(item)}
-              >
-                {item}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <div className="dashboard-content-footer">
-            <span className="empty-table">No data</span>
-          </div>
-        )}
+        <ReactPaginate
+          previousLabel={"< Prev"}
+          nextLabel={"Next >"}
+          breakLabel={"..."}
+          pageCount={Math.min(10, pages)}
+          onPageChange={(e) => changePage(e)}
+          containerClassName={"pagination-list"}
+          pageLinkClassName={"pagination-link"}
+          previousLinkClassName={"pagination-link"}
+          nextLinkClassName={"pagination-link"}
+          activeLinkClassName={"pagination-link is-current"}
+          disabledLinkClassName={"pagination-link is-disabled"}
+        />
       </div>
     </div>
   );
